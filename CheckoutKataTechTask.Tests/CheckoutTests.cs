@@ -45,4 +45,28 @@
         // Assert
         Assert.Equal(80, total);
     }
+
+    [Fact]
+    public async Task WhenScanningItemsWithBulkDiscount_ShouldApplyDiscount()
+    {
+        // Arrange
+        var productId = Guid.NewGuid();
+        var repository = new InMemoryProductRepository();
+        await repository.AddAsync(new Product(productId, "A", 50, "Product A"));
+
+        var discountService = new DiscountService(repository);
+        discountService.AddDiscountRule(
+            new DiscountRule(productId, new BulkDiscountStrategy(3, 130)));
+
+        var checkout = new Checkout(repository, discountService, NullLogger<Checkout>.Instance);
+
+        // Act
+        await checkout.ScanAsync(productId);
+        await checkout.ScanAsync(productId);
+        await checkout.ScanAsync(productId);
+        var total = await checkout.GetTotalPriceAsync();
+
+        // Assert
+        Assert.Equal(130, total);
+    }
 }
