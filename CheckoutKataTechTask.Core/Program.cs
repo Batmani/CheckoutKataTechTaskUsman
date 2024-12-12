@@ -45,10 +45,26 @@ public class InMemoryProductRepository : IProductRepository
         return Task.CompletedTask;
     }
 }
+public class DiscountRule
+{
+    public Guid ProductId { get; }
+    public IDiscountStrategy Strategy { get; }
 
+    public DiscountRule(Guid productId, IDiscountStrategy strategy)
+    {
+        ProductId = productId;
+        Strategy = strategy;
+    }
+}
 public class DiscountService
 {
     public DiscountService(IProductRepository repository) { }
+    private readonly Dictionary<Guid, DiscountRule> _discountRules = new();
+
+    public void AddDiscountRule(DiscountRule rule)
+    {
+        _discountRules[rule.ProductId] = rule;
+    }
 }
 
 public class Checkout : ICheckout
@@ -87,4 +103,33 @@ public interface ICheckout
 {
     Task ScanAsync(Guid productId);
     Task<int> GetTotalPriceAsync();
+}
+
+public interface IDiscountStrategy
+{
+    decimal CalculateDiscount(IEnumerable<Product> products);
+}
+
+public class BulkDiscountStrategy : IDiscountStrategy
+{
+    private readonly int _quantity;
+    private readonly decimal _specialPrice;
+
+    public BulkDiscountStrategy(int quantity, decimal specialPrice)
+    {
+        _quantity = quantity;
+        _specialPrice = specialPrice;
+    }
+
+    public decimal CalculateDiscount(IEnumerable<Product> products)
+    {
+        var count = products.Count();
+        var regularPrice = products.Sum(p => p.UnitPrice);
+        var specialOfferSets = count / _quantity;
+        var remainingItems = count % _quantity;
+        var discountedPrice = (specialOfferSets * _specialPrice) +
+                              (remainingItems * (products.FirstOrDefault()?.UnitPrice ?? 0));
+
+        return regularPrice - discountedPrice;
+    }
 }
