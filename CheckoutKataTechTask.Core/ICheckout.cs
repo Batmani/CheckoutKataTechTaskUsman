@@ -2,4 +2,5 @@
 {
     Task ScanAsync(Guid productId);
     Task<int> GetTotalPriceAsync();
+    void Clear();
 }
