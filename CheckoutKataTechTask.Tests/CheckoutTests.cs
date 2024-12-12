@@ -58,7 +58,7 @@
         discountService.AddDiscountRule(
             new DiscountRule(productId, new BulkDiscountStrategy(3, 130)));
 
-        var checkout = new Checkout(repository, discountService, NullLogger<Checkout>.Instance);
+        var checkout = new Checkout(repository, discountService );
 
         // Act
         await checkout.ScanAsync(productId);
