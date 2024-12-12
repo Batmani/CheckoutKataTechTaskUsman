@@ -10,8 +10,8 @@
         await repository.AddAsync(product);
 
         var checkout = new Checkout(repository,
-            new DiscountService(repository),
-            NullLogger<Checkout>.Instance);
+            new DiscountService(repository)
+           );
 
         // Act
         await checkout.ScanAsync(productId);
