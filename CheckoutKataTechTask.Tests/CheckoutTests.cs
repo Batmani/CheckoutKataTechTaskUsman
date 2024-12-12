@@ -69,4 +69,18 @@
         // Assert
         Assert.Equal(130, total);
     }
+
+    [Fact]
+    public async Task WhenScanningInvalidProductId_ShouldThrowException()
+    {
+        // Arrange
+        var repository = new InMemoryProductRepository();
+        var checkout = new Checkout(repository,
+            new DiscountService(repository) );
+
+        // Act & Assert
+        await Assert.ThrowsAsync<ArgumentException>(
+            async () => await checkout.ScanAsync(Guid.NewGuid()));
+    }
 }
+
